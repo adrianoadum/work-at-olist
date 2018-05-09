@@ -1,23 +1,26 @@
-from rest_framework import status
+from rest_framework import status, viewsets
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from .models import PhoneCall
-from .serializers import PhoneCallSerializer
+from .serializers import BillingSerializer, PhoneCallSerializer
 
 
-@api_view(['GET', 'POST'])
-def phonecall_list(request):
+class PhoneCallViewSet(viewsets.ViewSet):
     """
-    List all code phone calls, or create a new one.
+    Example empty viewset demonstrating the standard
+    actions that will be handled by a router class.
+
+    If you're using format suffixes, make sure to also include
+    the `format=None` keyword argument for each action.
     """
-    request.body
-    if request.method == 'GET':
+
+    def list(self, request):
         phone_calls = PhoneCall.objects.all()
         serializer = PhoneCallSerializer(phone_calls, many=True)
         return Response(serializer.data)
 
-    elif request.method == 'POST':
+    def create(self, request):
         serializer = PhoneCallSerializer(data=request.data)
         if serializer.is_valid():
             serializer.create(serializer.validated_data)
