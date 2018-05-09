@@ -5,6 +5,7 @@ from rest_framework import serializers
 
 from .models import PhoneCall, PhoneCallRecord
 
+
 class PhoneCallSerializer(serializers.BaseSerializer):
     def to_internal_value(self, data):
         type = data.get('type')
