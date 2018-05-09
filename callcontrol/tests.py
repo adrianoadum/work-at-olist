@@ -13,7 +13,6 @@ class CallStartTestCase(APITestCase):
         """
         url = reverse('phonecall-list')
         data = {
-            'id': 1,
             'type': 'start',
             'timestamp': '2016-02-29T12:00:00Z',
             'call_id': 1,
@@ -49,7 +48,7 @@ class CallStopTestCase(APITestCase):
         """
         url = reverse('phonecall-list')
         data = {
-            'id': 1,
+            'call_id': 1,
             'type': 'stop',
             'timestamp': '2016-02-29T14:00:00Z',
         }

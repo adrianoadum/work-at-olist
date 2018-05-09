@@ -19,7 +19,7 @@ class PhoneCallSerializer(serializers.BaseSerializer):
             raise serializers.ValidationError({
                 'score': 'This field is required.'
             })
-        if type not in ('start', 'end'):
+        if type not in ('start', 'stop'):
             raise serializers.ValidationError({
                 'score': 'Invalid value. Valid values are: "start", "stop".'
             })
