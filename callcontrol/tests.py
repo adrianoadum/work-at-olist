@@ -56,3 +56,14 @@ class CallStopTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(PhoneCall.objects.count(), 1)
         self.assertEqual(PhoneCallRecord.objects.count(), 2)
+
+
+class GenerateBillTestCase(APITestCase):
+    def test_generate_bill(self):
+        """
+        Ensure we can create bill.
+        """
+        url = reverse('billing-list')
+        data = {'phone_number': '99988526423'}
+        response = self.client.get(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
