@@ -1,9 +1,10 @@
 import re
-from django.utils.timezone import datetime
 
+from django.utils.timezone import datetime
 from rest_framework import serializers
 
 from .models import PhoneCall, PhoneCallRecord
+from .utils import monthdelta
 
 
 class PhoneCallSerializer(serializers.BaseSerializer):
@@ -14,7 +15,6 @@ class PhoneCallSerializer(serializers.BaseSerializer):
         source = data.get('source')
         destination = data.get('destination')
 
-        # Perform the data validation.
         if not type:
             raise serializers.ValidationError({
                 'score': 'This field is required.'
@@ -96,3 +96,79 @@ class PhoneCallSerializer(serializers.BaseSerializer):
             timestamp=validated_data.get('timestamp'))
 
         return phone_call
+
+
+class BillingSerializer(serializers.BaseSerializer):
+    """
+    Serializer responsible to generate bill.
+    """
+    def to_internal_value(self, data):
+        phone_number = data.get('phone_number')
+        period = data.get('period')
+
+        if not phone_number:
+            raise serializers.ValidationError({
+                'phone_number': 'This field is required.'
+            })
+        pattern = re.compile(r'^\d{10,11}$')
+        if not pattern.match(phone_number):
+            raise serializers.ValidationError({
+                'phone_number': 'Invalid number format.'
+            })
+
+        if period:
+            try:
+                period = datetime.strptime(period, '%Y-%m')
+            except ValueError:
+                raise serializers.ValidationError({
+                    'period': 'Invalid period format.'
+                })
+
+            today = datetime.today().replace(day=1)
+            if period >= today:
+                raise serializers.ValidationError({
+                    'period': 'Invalid period.'
+                })
+        else:
+            period = datetime.today().replace(day=1)
+            period = monthdelta(period, -1)  # subtract month
+
+        validated_data = {
+            'phone_number': phone_number,
+            'period': period.date(),
+        }
+
+        return validated_data
+
+    def generate_billing(self, validated_data):
+        """
+        Generate Bill.
+        """
+        phone_calls = PhoneCall.objects.filter(
+            source=validated_data.get('phone_number'),
+            phonecallrecord__type='stop',
+            phonecallrecord__timestamp__year=validated_data.get(
+                'period').year,
+            phonecallrecord__timestamp__month=validated_data.get(
+                'period').month
+        )
+
+        total = sum(call.price for call in phone_calls if call.price)
+
+        ret = {
+            'subscriber': validated_data.get('phone_number'),
+            'period': validated_data.get('period').strftime('%Y-%m'),
+            'total': total,
+            'list': []
+        }
+
+        for call in phone_calls:
+            ret['list'].append({
+                'destination': call.destination,
+                'start_date': call.start.date(),
+                'start_time': call.start.time(),
+                'duration': str(call.duration),
+                'price': call.price
+            })
+
+        return ret
