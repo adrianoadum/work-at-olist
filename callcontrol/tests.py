@@ -28,7 +28,7 @@ class CallStartTestCase(APITestCase):
 class CallStopTestCase(APITestCase):
     def setUp(self):
         """
-        setUp creating started phone call.
+        Create started phone call.
         """
         phone_call = PhoneCall.objects.create(
             call_id=1,
@@ -67,3 +67,37 @@ class GenerateBillTestCase(APITestCase):
         data = {'phone_number': '99988526423'}
         response = self.client.get(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class BillingCorrectValueTestCase(APITestCase):
+    def setUp(self):
+        """
+        Create two calls.
+        """
+        url = reverse('phonecall-list')
+        for i in range(1, 3):
+            data = {
+                'type': 'start',
+                'timestamp': '2018-05-0%dT21:57:13Z' % i,
+                'call_id': i,
+                'source': '99988526423',
+                'destination': '9993468278'
+            }
+            self.client.post(url, data, format='json')
+
+            data = {
+                'call_id': i,
+                'type': 'stop',
+                'timestamp': '2018-05-0%dT22:10:56Z' % i,
+            }
+            self.client.post(url, data, format='json')
+
+    def test_billing_corret_value(self):
+        """
+        Ensure bill value is correct.
+        """
+        url = reverse('billing-list')
+        data = {'phone_number': '99988526423'}
+        response = self.client.get(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data['total'], 1.08)
