@@ -2,6 +2,7 @@
 Module responsible for billing calculations.
 """
 from dateutil.rrule import DAILY, rrule
+from dateutil.relativedelta import relativedelta
 from django.utils import timezone
 
 from .models import Pricing, PhoneCall
@@ -68,7 +69,7 @@ def create_bill(phone_number, period=None):
     Create bill.
     """
     if not period:
-        period = timezone.now().date()
+        period = (timezone.now() - relativedelta(months=1)).date()
 
     phone_calls = PhoneCall.objects.distinct().filter(
         source=phone_number,
