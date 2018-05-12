@@ -84,13 +84,18 @@ class PhoneCallSerializer(serializers.BaseSerializer):
         }
 
     def create(self, validated_data):
-        phone_call, __ = PhoneCall.objects.update_or_create(
-            call_id=validated_data.get('call_id'),
-            defaults={
-                'source': validated_data.get('source'),
-                'destination': validated_data.get('destination')
-            },
-        )
+        try:
+            phone_call = PhoneCall.objects.get(
+                call_id=validated_data.get('call_id'))
+        except PhoneCall.DoesNotExist:
+            phone_call = PhoneCall(call_id=validated_data.get('call_id'))
+
+        if 'source' in validated_data:
+            phone_call.source = validated_data['source']
+        if 'destination' in validated_data:
+            phone_call.destination = validated_data['destination']
+
+        phone_call.save()
 
         PhoneCallRecord.objects.create(
             call=phone_call,
