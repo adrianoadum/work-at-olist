@@ -65,10 +65,13 @@ def calculate_call_price(start, end):
     return call_price
 
 
-def create_bill(phone_number, period):
+def create_bill(phone_number, period=None):
     """
     Create bill.
     """
+    if not period:
+        period = timezone.now().date()
+
     phone_calls = PhoneCall.objects.distinct().filter(
         source=phone_number,
         phonecallrecord__type='stop',

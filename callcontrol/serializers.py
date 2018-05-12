@@ -1,4 +1,3 @@
-
 import re
 
 from dateutil.relativedelta import relativedelta
@@ -9,79 +8,25 @@ from .billing import calculate_call_price, create_bill
 from .models import PhoneCall, PhoneCallRecord
 
 
-class PhoneCallSerializer(serializers.BaseSerializer):
-    def to_internal_value(self, data):
-        type = data.get('type')
-        timestamp = data.get('timestamp')
-        call_id = data.get('call_id')
-        source = data.get('source')
-        destination = data.get('destination')
+class PhoneCallSerializer(serializers.ModelSerializer):
+    price = serializers.DecimalField(
+        max_digits=7, decimal_places=2, read_only=True)
+    type = serializers.ChoiceField(choices=('start', 'end'), write_only=True)
+    timestamp = serializers.DateTimeField(required=True, write_only=True)
+    source = serializers.RegexField(
+        r'\d', max_length=11, min_length=10)
+    destination = serializers.RegexField(
+        r'\d', max_length=11, min_length=10)
 
-        if not type:
-            raise serializers.ValidationError({
-                'score': 'This field is required.'
-            })
-        if type not in ('start', 'stop'):
-            raise serializers.ValidationError({
-                'score': 'Invalid value. Valid values are: "start", "stop".'
-            })
-        if not timestamp:
-            raise serializers.ValidationError({
-                'timestamp': 'This field is required.'
-            })
-        try:
-            timestamp = datetime.strptime(timestamp, '%Y-%m-%dT%H:%M:%SZ')
-        except ValueError:
-            raise serializers.ValidationError({
-                'timestamp': 'Invalid format.'
-            })
-        if not call_id:
-            raise serializers.ValidationError({
-                'call_id': 'This field is required.'
-            })
-        if type == 'start':
-            if not source:
-                raise serializers.ValidationError({
-                    'source': 'This field is required when type is "start".'
-                })
-            if not destination:
-                raise serializers.ValidationError({
-                    'destination': 'This field is required when type is "start".'
-                })
-
-            pattern = re.compile(r'^\d{10,11}$')
-            if not pattern.match(source):
-                raise serializers.ValidationError({
-                    'source': 'Invalid number format.'
-                })
-            if not pattern.match(destination):
-                raise serializers.ValidationError({
-                    'destination': 'Invalid number format.'
-                })
-
-        validated_data = {
-            'type': type,
-            'timestamp': timestamp,
-            'call_id': int(call_id)
-        }
-        if type == 'start':
-            validated_data['source'] = source
-            validated_data['destination'] = destination
-
-        return validated_data
-
-    def to_representation(self, instance):
-        if isinstance(instance, PhoneCall):
-            return {
-                'call_id': instance.call_id,
-                'source': instance.source,
-                'destination': instance.destination
-            }
-        return {
-            'call_id': instance.get('call_id'),
-            'source': instance.get('source'),
-            'destination': instance.get('destination')
-        }
+    def validate(self, data):
+        if data['type'] == 'start':
+            if not data['source']:
+                raise serializers.ValidationError(
+                    'This field is required when type is "start"')
+            if not data['destination']:
+                raise serializers.ValidationError(
+                    'This field is required when type is "start"')
+        return data
 
     def create(self, validated_data):
         try:
@@ -109,12 +54,13 @@ class PhoneCallSerializer(serializers.BaseSerializer):
 
         return phone_call
 
+    class Meta:
+        model = PhoneCall
+        fields = ('id', 'call_id', 'source', 'destination',
+                  'price', 'type', 'timestamp')
+
 
 class BillingSerializer(serializers.BaseSerializer):
-    """
-    Serializer responsible to generate bill.
-    """
-
     def to_internal_value(self, data):
         phone_number = data.get('phone_number')
         period = data.get('period')
@@ -142,23 +88,10 @@ class BillingSerializer(serializers.BaseSerializer):
                 raise serializers.ValidationError({
                     'period': 'Invalid period.'
                 })
-        else:
-            period = datetime.today().replace(day=1)
-            period -= relativedelta(months=1)
 
         validated_data = {
             'phone_number': phone_number,
-            'period': period.date(),
+            'period': period.date() if period else None,
         }
 
         return validated_data
-
-    @classmethod
-    def generate_billing(cls, validated_data):
-        """
-        Generate Bill.
-        """
-        phone_number = validated_data.get('phone_number')
-        period = validated_data.get('period')
-
-        return create_bill(phone_number, period)
