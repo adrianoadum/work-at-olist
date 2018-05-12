@@ -1,10 +1,13 @@
 import re
+import locale
+import platform
 
+from dateutil.relativedelta import relativedelta
 from django.utils.timezone import datetime
 from rest_framework import serializers
 
+from .billing import calculate_call_price
 from .models import PhoneCall, PhoneCallRecord
-from .utils import monthdelta
 
 
 class PhoneCallSerializer(serializers.BaseSerializer):
@@ -95,6 +98,11 @@ class PhoneCallSerializer(serializers.BaseSerializer):
             type=validated_data.get('type'),
             timestamp=validated_data.get('timestamp'))
 
+        if phone_call.start and phone_call.end:
+            phone_call.price = calculate_call_price(
+                phone_call.start, phone_call.end)
+            phone_call.save()
+
         return phone_call
 
 
@@ -131,7 +139,7 @@ class BillingSerializer(serializers.BaseSerializer):
                 })
         else:
             period = datetime.today().replace(day=1)
-            period = monthdelta(period, -1)  # subtract month
+            period -= relativedelta(months=1)
 
         validated_data = {
             'phone_number': phone_number,
@@ -140,25 +148,31 @@ class BillingSerializer(serializers.BaseSerializer):
 
         return validated_data
 
-    def generate_billing(self, validated_data):
+    @classmethod
+    def generate_billing(cls, validated_data):
         """
         Generate Bill.
         """
-        phone_calls = PhoneCall.objects.filter(
+        phone_calls = PhoneCall.objects.distinct().filter(
             source=validated_data.get('phone_number'),
             phonecallrecord__type='stop',
             phonecallrecord__timestamp__year=validated_data.get(
                 'period').year,
             phonecallrecord__timestamp__month=validated_data.get(
                 'period').month
-        )
+        ).exclude(price=None)
 
         total = sum(call.price for call in phone_calls if call.price)
+
+        if platform.system() == 'Windows':
+            locale.setlocale(locale.LC_MONETARY, 'pt-BR')
+        else:
+            locale.setlocale(locale.LC_MONETARY, 'pt_BR.UTF-8')
 
         ret = {
             'subscriber': validated_data.get('phone_number'),
             'period': validated_data.get('period').strftime('%Y-%m'),
-            'total': total,
+            'total': locale.currency(total, grouping=True),
             'list': []
         }
 
@@ -168,7 +182,7 @@ class BillingSerializer(serializers.BaseSerializer):
                 'start_date': call.start.date(),
                 'start_time': call.start.time(),
                 'duration': str(call.duration),
-                'price': call.price
+                'price': locale.currency(call.price, grouping=True),
             })
 
         return ret

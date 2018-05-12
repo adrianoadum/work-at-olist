@@ -1,16 +1,17 @@
-def monthdelta(date, delta):
-    """
-    Add or subtract months in a spcified date
-    """
-    month, year = (date.month+delta) % 12, date.year + \
-        ((date.month)+delta-1) // 12
-    if not month:
-        month = 12
+import datetime
 
-    if year % 4 == 0 and not year % 400 == 0:
-        min_day = [31, 29]
-    else:
-        min_day = [28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
 
-    day = min(date.day, min_day[month-1])
-    return date.replace(day=day, month=month, year=year)
+def time_in_range(start, end, time_to_check):
+    """
+    Return True if time_to_check is in the range [start, end]
+    """
+    if not isinstance(start, datetime.time):
+        raise TypeError('"start" must be "time" object')
+    elif not isinstance(end, datetime.time):
+        raise TypeError('"end" must be "time" object')
+    elif not isinstance(time_to_check, datetime.time):
+        raise TypeError('"time_to_check" must be "time" object')
+
+    if start <= end:
+        return start <= time_to_check <= end
+    return start <= time_to_check or time_to_check <= end
