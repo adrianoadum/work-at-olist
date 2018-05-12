@@ -100,4 +100,4 @@ class BillingCorrectValueTestCase(APITestCase):
         data = {'phone_number': '99988526423', 'period': '2018-04'}
         response = self.client.get(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(float(response.data['total']), 1.08)
+        self.assertEqual(response.data['total'], 'R$1,08')
