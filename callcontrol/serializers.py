@@ -9,14 +9,15 @@ from .models import PhoneCall, PhoneCallRecord
 
 
 class PhoneCallSerializer(serializers.ModelSerializer):
+    call_id = serializers.IntegerField(min_value=1, required=True)
     price = serializers.DecimalField(
         max_digits=7, decimal_places=2, read_only=True)
     type = serializers.ChoiceField(choices=('start', 'end'), write_only=True)
     timestamp = serializers.DateTimeField(required=True, write_only=True)
     source = serializers.RegexField(
-        r'\d', max_length=11, min_length=10)
+        r'\d', max_length=11, min_length=10, required=False)
     destination = serializers.RegexField(
-        r'\d', max_length=11, min_length=10)
+        r'\d', max_length=11, min_length=10, required=False)
 
     def validate(self, data):
         if data['type'] == 'start':

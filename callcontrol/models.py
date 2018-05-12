@@ -22,7 +22,7 @@ class PhoneCall(models.Model):
 
     @property
     def end(self):
-        record = self.phonecallrecord_set.filter(type='stop').last()
+        record = self.phonecallrecord_set.filter(type='end').last()
         if record:
             return record.timestamp
         return None
@@ -37,7 +37,7 @@ class PhoneCall(models.Model):
 class PhoneCallRecord(models.Model):
     RECORD_TYPES = (
         ('start', 'Start'),
-        ('stop', 'Stop'),
+        ('end', 'End'),
     )
     call = models.ForeignKey(PhoneCall, on_delete=models.PROTECT)
     type = models.CharField(max_length=5, choices=RECORD_TYPES)

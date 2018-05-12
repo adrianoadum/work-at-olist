@@ -74,7 +74,7 @@ def create_bill(phone_number, period=None):
 
     phone_calls = PhoneCall.objects.distinct().filter(
         source=phone_number,
-        phonecallrecord__type='stop',
+        phonecallrecord__type='end',
         phonecallrecord__timestamp__year=period.year,
         phonecallrecord__timestamp__month=period.month
     ).exclude(price=None)

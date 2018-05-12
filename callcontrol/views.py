@@ -24,6 +24,7 @@ class BillingViewSet(viewsets.ViewSet):
 
     period is optional, default is the previous month from now.
     """
+
     def list(self, request):
         serializer = BillingSerializer(data=request.query_params)
         if serializer.is_valid():

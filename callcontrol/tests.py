@@ -25,7 +25,7 @@ class CallStartTestCase(APITestCase):
         self.assertEqual(PhoneCallRecord.objects.count(), 1)
 
 
-class CallStopTestCase(APITestCase):
+class CallEndTestCase(APITestCase):
     def setUp(self):
         """
         Create started phone call.
@@ -42,14 +42,14 @@ class CallStopTestCase(APITestCase):
                 '2016-02-29T12:00:00Z', '%Y-%m-%dT%H:%M:%SZ')
         )
 
-    def test_call_stop(self):
+    def test_call_end(self):
         """
-        Ensure we can stop a existing phone call.
+        Ensure we can end a existing phone call.
         """
         url = reverse('phonecall-list')
         data = {
             'call_id': 1,
-            'type': 'stop',
+            'type': 'end',
             'timestamp': '2016-02-29T14:00:00Z',
         }
         response = self.client.post(url, data, format='json')
@@ -87,7 +87,7 @@ class BillingCorrectValueTestCase(APITestCase):
 
             data = {
                 'call_id': i,
-                'type': 'stop',
+                'type': 'end',
                 'timestamp': '2018-04-0%dT22:10:56Z' % i,
             }
             self.client.post(url, data, format='json')

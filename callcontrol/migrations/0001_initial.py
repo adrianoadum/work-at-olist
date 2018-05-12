@@ -27,7 +27,7 @@ class Migration(migrations.Migration):
             name='PhoneCallRecord',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('type', models.CharField(choices=[('start', 'Start'), ('stop', 'Stop')], max_length=5)),
+                ('type', models.CharField(choices=[('start', 'Start'), ('end', 'End')], max_length=5)),
                 ('timestamp', models.DateTimeField()),
                 ('call', models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to='callcontrol.PhoneCall')),
             ],
