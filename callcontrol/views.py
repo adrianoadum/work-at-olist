@@ -11,6 +11,7 @@ class PhoneCallViewSet(viewsets.ViewSet):
     Phone call control.
     Used to send call detail records.
     """
+
     def list(self, request):
         phone_calls = PhoneCall.objects.all()
         serializer = PhoneCallSerializer(phone_calls, many=True)
@@ -29,6 +30,7 @@ class BillingViewSet(viewsets.ViewSet):
     Generates bill for given phone number.
     Period is optional, default is the previous month from now.
     """
+
     def list(self, request):
         serializer = BillingSerializer(data=request.query_params)
         if serializer.is_valid():

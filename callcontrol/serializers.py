@@ -1,6 +1,6 @@
-import re
 import locale
 import platform
+import re
 
 from dateutil.relativedelta import relativedelta
 from django.utils.timezone import datetime
@@ -110,6 +110,7 @@ class BillingSerializer(serializers.BaseSerializer):
     """
     Serializer responsible to generate bill.
     """
+
     def to_internal_value(self, data):
         phone_number = data.get('phone_number')
         period = data.get('period')
