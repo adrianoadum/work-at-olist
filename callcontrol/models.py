@@ -7,8 +7,10 @@ PHONE_REGEX = RegexValidator(
 
 class PhoneCall(models.Model):
     call_id = models.PositiveIntegerField(unique=True)
-    source = models.CharField(validators=[PHONE_REGEX], max_length=11)
-    destination = models.CharField(validators=[PHONE_REGEX], max_length=11)
+    source = models.CharField(
+        validators=[PHONE_REGEX], max_length=11, null=True)
+    destination = models.CharField(
+        validators=[PHONE_REGEX], max_length=11, null=True)
     price = models.DecimalField(max_digits=7, decimal_places=2, null=True)
 
     @property

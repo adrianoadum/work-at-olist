@@ -85,7 +85,7 @@ class PhoneCallSerializer(serializers.BaseSerializer):
         }
 
     def create(self, validated_data):
-        phone_call, __ = PhoneCall.objects.get_or_create(
+        phone_call, __ = PhoneCall.objects.update_or_create(
             call_id=validated_data.get('call_id'),
             defaults={
                 'source': validated_data.get('source'),
