@@ -1,10 +1,12 @@
 """
 Module responsible for billing calculations.
 """
+import locale
+import platform
 from dateutil.rrule import DAILY, rrule
 from django.utils import timezone
 
-from .models import Pricing
+from .models import Pricing, PhoneCall
 from .utils import time_in_range
 
 
@@ -61,3 +63,40 @@ def calculate_call_price(start, end):
     call_price += standing_price
 
     return call_price
+
+
+def create_bill(phone_number, period):
+    """
+    Create bill.
+    """
+    phone_calls = PhoneCall.objects.distinct().filter(
+        source=phone_number,
+        phonecallrecord__type='stop',
+        phonecallrecord__timestamp__year=period.year,
+        phonecallrecord__timestamp__month=period.month
+    ).exclude(price=None)
+
+    total = sum(call.price for call in phone_calls if call.price)
+
+    if platform.system() == 'Windows':
+        locale.setlocale(locale.LC_MONETARY, 'pt-BR')
+    else:
+        locale.setlocale(locale.LC_MONETARY, 'pt_BR.UTF-8')
+
+    bill = {
+        'subscriber': phone_number,
+        'period': period.strftime('%Y-%m'),
+        'total': locale.currency(total, grouping=True),
+        'list': []
+    }
+
+    for call in phone_calls:
+        bill['list'].append({
+            'destination': call.destination,
+            'start_date': call.start.date(),
+            'start_time': call.start.time(),
+            'duration': str(call.duration),
+            'price': locale.currency(call.price, grouping=True),
+        })
+
+    return bill
