@@ -15,9 +15,9 @@ class PhoneCallSerializer(serializers.ModelSerializer):
     type = serializers.ChoiceField(choices=('start', 'end'), write_only=True)
     timestamp = serializers.DateTimeField(required=True, write_only=True)
     source = serializers.RegexField(
-        r'\d', max_length=11, min_length=10, required=False)
+        r'\d{10,11}', max_length=11, min_length=10, required=False)
     destination = serializers.RegexField(
-        r'\d', max_length=11, min_length=10, required=False)
+        r'\d{10,11}', max_length=11, min_length=10, required=False)
 
     def validate(self, data):
         if data['type'] == 'start':
