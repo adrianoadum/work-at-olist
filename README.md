@@ -1,10 +1,10 @@
 # Work at Olist - Test Implementation
 
-This is a test resolution for a job application at [Olist](https://olist.com/) as Python Web Developer.
+This fork is a test resolution for a job application at [Olist](https://olist.com/) as Python Web Developer.
 
 The project is an API responsible for:
 - Register phone call records
-- Geneate monthly bill
+- Generate monthly bill
 
 ## Deployed instance
 The project was deployed on Heroku.
@@ -15,7 +15,10 @@ The project was deployed on Heroku.
 To make project work, follow the steps:
 1. Clone or download the repo.
 2. Install dependencies from requirements.txt
-3. Create a PostgreSQL database and user, then configure settings.py
+   ```
+   pip install -r requirements.txt
+   ```
+3. Create a PostgreSQL database and user, then configure in [settings.py file](work_at_olist/settings.py)
 4. Run migrations:
    ```
    python manage.py migrate
