@@ -1,3 +1,4 @@
+from dateutil.relativedelta import relativedelta
 from django.urls import reverse
 from django.utils.timezone import datetime
 from rest_framework import status
@@ -272,3 +273,29 @@ class InvalidPeriodTestCase(APITestCase):
         self.assertEqual(len(response.data['list']), 0)
         self.assertEqual(response.data['total'], 'R$0,00')
         self.assertEqual(PhoneCall.objects.count(), 1)
+
+    def test_current_month_billing(self):
+        """
+        Throw error for current month bill.
+        """
+        now = datetime.now()
+
+        url = reverse('billing-list')
+        data = {'phone_number': '9998852642', 'period': now.strftime('%m/%Y')}
+        response = self.client.get(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_next_month_billing(self):
+        """
+        Throw error for current month bill.
+        """
+        now = datetime.now()
+        next_month = now + relativedelta(months=1)
+
+        url = reverse('billing-list')
+        data = {
+            'phone_number': '9998852642',
+            'period': next_month.strftime('%m/%Y')
+        }
+        response = self.client.get(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

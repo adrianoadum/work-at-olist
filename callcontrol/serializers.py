@@ -78,13 +78,13 @@ class BillingSerializer(serializers.BaseSerializer):
 
         if period:
             try:
-                period = datetime.strptime(period, '%m/%Y')
+                period = datetime.strptime(period, '%m/%Y').date()
             except ValueError:
                 raise serializers.ValidationError({
                     'period': 'Invalid period format.'
                 })
 
-            today = datetime.today().replace(day=1)
+            today = datetime.now().replace(day=1).date()
             if period >= today:
                 raise serializers.ValidationError({
                     'period': 'Invalid period.'
@@ -92,7 +92,7 @@ class BillingSerializer(serializers.BaseSerializer):
 
         validated_data = {
             'phone_number': phone_number,
-            'period': period.date() if period else None,
+            'period': period if period else None,
         }
 
         return validated_data
