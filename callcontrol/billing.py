@@ -1,12 +1,12 @@
 """
 Module responsible for billing calculations.
 """
-from dateutil.rrule import DAILY, rrule
 from dateutil.relativedelta import relativedelta
+from dateutil.rrule import DAILY, rrule
 from django.utils import timezone
 
-from .models import Pricing, PhoneCall
-from .utils import time_in_range, format_currency
+from .models import PhoneCall, Pricing
+from .utils import format_currency, time_in_range
 
 
 class Billing:

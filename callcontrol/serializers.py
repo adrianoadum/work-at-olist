@@ -1,6 +1,5 @@
 import re
 
-from dateutil.relativedelta import relativedelta
 from django.utils.timezone import datetime
 from rest_framework import serializers
 

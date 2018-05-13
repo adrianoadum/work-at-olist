@@ -1,11 +1,9 @@
-from rest_framework import generics, mixins, status, viewsets
-from rest_framework.decorators import action, api_view
+from rest_framework import mixins, status, viewsets
 from rest_framework.response import Response
 
+from .billing import Billing
 from .models import PhoneCall
 from .serializers import BillingSerializer, PhoneCallSerializer
-
-from .billing import Billing
 
 
 class PhoneCallViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
