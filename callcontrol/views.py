@@ -10,22 +10,26 @@ from .billing import Billing
 
 class PhoneCallViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
     """
-    ViewSet responsible for call records.
+    create:
+    Record a phone call register.
     """
     queryset = PhoneCall.objects.all()
     serializer_class = PhoneCallSerializer
 
 
-class BillingViewSet(viewsets.ViewSet):
-    """
-    Generates bill for given phone number.
+class BillingViewSet(mixins.ListModelMixin, viewsets.GenericViewSet):
+    queryset = PhoneCall.objects.all()
+    serializer_class = BillingSerializer
 
-    phone_number is required.
+    def list(self, request, *args, **kwargs):
+        """
+        Generate a monthly phone bill for a specified number.
 
-    period is optional, default is the previous month from now.
-    """
+        ``phone_number`` is **required**.
 
-    def list(self, request):
+        ``period`` is optional. Default is the last closed month. Expected
+        format is *MM/YYYY*
+        """
         serializer = BillingSerializer(data=request.query_params)
         if serializer.is_valid():
             phone_number = serializer.validated_data.get('phone_number')

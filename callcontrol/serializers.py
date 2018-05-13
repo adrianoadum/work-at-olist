@@ -9,15 +9,24 @@ from .models import PhoneCall, PhoneCallRecord
 
 
 class PhoneCallSerializer(serializers.ModelSerializer):
-    call_id = serializers.IntegerField(min_value=1, required=True)
+    call_id = serializers.IntegerField(
+        min_value=1, required=True,
+        help_text='Unique identificator for the call')
     price = serializers.DecimalField(
         max_digits=7, decimal_places=2, read_only=True)
-    type = serializers.ChoiceField(choices=('start', 'end'), write_only=True)
-    timestamp = serializers.DateTimeField(required=True, write_only=True)
+    type = serializers.ChoiceField(
+        choices=('start', 'end'), write_only=True,
+        help_text='Type of the register. Options are "start" or "end".')
+    timestamp = serializers.DateTimeField(
+        required=True, write_only=True, help_text='Timestamp of the event.')
     source = serializers.RegexField(
-        r'\d{10,11}', max_length=11, min_length=10, required=False)
+        r'\d{10,11}', max_length=11, min_length=10, required=False,
+        help_text=('Required when type is "start". Phone '
+                   'number that originated the call.'))
     destination = serializers.RegexField(
-        r'\d{10,11}', max_length=11, min_length=10, required=False)
+        r'\d{10,11}', max_length=11, min_length=10, required=False,
+        help_text=('Required when type is "start". Phone '
+                   'number that received the call.'))
 
     def validate(self, data):
         if data['type'] == 'start':
@@ -57,11 +66,18 @@ class PhoneCallSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PhoneCall
-        fields = ('id', 'call_id', 'source', 'destination',
-                  'price', 'type', 'timestamp')
+        fields = ('id', 'call_id', 'timestamp', 'type',
+                  'source', 'destination', 'price')
 
 
 class BillingSerializer(serializers.BaseSerializer):
+    phone_number = serializers.RegexField(
+        r'\d{10,11}', max_length=11, min_length=10, required=True,
+        help_text=('Phone number of the bill.'))
+    period = serializers.RegexField(
+        r'\d{10,11}', max_length=11, min_length=10, required=False,
+        help_text=('Period(month/year) of the bill.'))
+
     def to_internal_value(self, data):
         phone_number = data.get('phone_number')
         period = data.get('period')
