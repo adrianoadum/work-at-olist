@@ -180,12 +180,6 @@ class BillingCorrectTotalTestCase(APITestCase):
         """
         Create two calls.
         """
-        pass
-
-    def test_billing_corret_value(self):
-        """
-        Ensure bill value is correct.
-        """
         url = reverse('phonecall-list')
         for i in range(1, 3):
             data = {
@@ -206,6 +200,10 @@ class BillingCorrectTotalTestCase(APITestCase):
             response = self.client.post(url, data, format='json')
             self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
+    def test_billing_corret_value(self):
+        """
+        Ensure bill value is correct.
+        """
         url = reverse('billing-list')
         data = {'phone_number': '9998852642', 'period': '04/2018'}
         response = self.client.get(url, data, format='json')
@@ -216,6 +214,9 @@ class BillingCorrectTotalTestCase(APITestCase):
 
 class BillingLongCallTestCase(APITestCase):
     def setUp(self):
+        """
+        Create a valid call.
+        """
         url = reverse('phonecall-list')
         data = {
             'type': 'start',
