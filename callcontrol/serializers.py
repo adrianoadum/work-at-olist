@@ -78,7 +78,7 @@ class BillingSerializer(serializers.BaseSerializer):
 
         if period:
             try:
-                period = datetime.strptime(period, '%Y-%m')
+                period = datetime.strptime(period, '%m/%Y')
             except ValueError:
                 raise serializers.ValidationError({
                     'period': 'Invalid period format.'

@@ -87,7 +87,7 @@ class Billing:
 
         bill = {
             'subscriber': phone_number,
-            'period': period.strftime('%Y-%m'),
+            'period': period.strftime('%m/%Y'),
             'total': format_currency(total),
             'list': []
         }

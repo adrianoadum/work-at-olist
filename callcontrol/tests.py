@@ -206,7 +206,7 @@ class BillingCorrectTotalTestCase(APITestCase):
             self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         url = reverse('billing-list')
-        data = {'phone_number': '9998852642', 'period': '2018-04'}
+        data = {'phone_number': '9998852642', 'period': '04/2018'}
         response = self.client.get(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['list']), 2)
@@ -236,7 +236,7 @@ class BillingLongCallTestCase(APITestCase):
         Ensure bill value is correct when a call is 24h+.
         """
         url = reverse('billing-list')
-        data = {'phone_number': '9998852642', 'period': '2018-03'}
+        data = {'phone_number': '9998852642', 'period': '03/2018'}
         response = self.client.get(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['list']), 1)
@@ -266,7 +266,7 @@ class InvalidPeriodTestCase(APITestCase):
         Ensure invalid calls aren't shown in billing
         """
         url = reverse('billing-list')
-        data = {'phone_number': '9998852642', 'period': '2018-03'}
+        data = {'phone_number': '9998852642', 'period': '03/2018'}
         response = self.client.get(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data['list']), 0)
