@@ -203,7 +203,7 @@ class BillingCorrectTotalTestCase(APITestCase):
                 'destination': '9993468278'
             }
             response = self.client.post(url, data, format='json')
-            self.assertEqual(response.status_code, status.HTTP_201_CREATED, str(response.data))
+            self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
         url = reverse('billing-list')
         data = {'phone_number': '9998852642', 'period': '2018-04'}
