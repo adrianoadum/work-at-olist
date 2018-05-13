@@ -4,7 +4,7 @@ from dateutil.relativedelta import relativedelta
 from django.utils.timezone import datetime
 from rest_framework import serializers
 
-from .billing import calculate_call_price, create_bill
+from .billing import Billing
 from .models import PhoneCall, PhoneCallRecord
 
 
@@ -49,7 +49,7 @@ class PhoneCallSerializer(serializers.ModelSerializer):
             timestamp=validated_data.get('timestamp'))
 
         if phone_call.start and phone_call.end:
-            phone_call.price = calculate_call_price(
+            phone_call.price = Billing.calculate_call_price(
                 phone_call.start, phone_call.end)
             phone_call.save()
 

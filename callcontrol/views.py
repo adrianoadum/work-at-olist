@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from .models import PhoneCall
 from .serializers import BillingSerializer, PhoneCallSerializer
 
-from .billing import create_bill
+from .billing import Billing
 
 
 class PhoneCallViewSet(mixins.CreateModelMixin, viewsets.GenericViewSet):
@@ -30,5 +30,5 @@ class BillingViewSet(viewsets.ViewSet):
         if serializer.is_valid():
             phone_number = serializer.validated_data.get('phone_number')
             period = serializer.validated_data.get('period')
-            return Response(create_bill(phone_number, period))
+            return Response(Billing.create_bill(phone_number, period))
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
