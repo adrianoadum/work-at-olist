@@ -7,11 +7,22 @@ PHONE_REGEX = RegexValidator(
 
 class PhoneCall(models.Model):
     call_id = models.PositiveIntegerField(unique=True)
-    source = models.CharField(
-        validators=[PHONE_REGEX], max_length=11, null=True)
-    destination = models.CharField(
-        validators=[PHONE_REGEX], max_length=11, null=True)
     price = models.DecimalField(max_digits=7, decimal_places=2, null=True)
+
+    @property
+    def source(self):
+        source = self.phonecallparticipant_set.filter(type='source').last()
+        if source:
+            return source.phone_number
+        return None
+
+    @property
+    def destination(self):
+        destination = self.phonecallparticipant_set.filter(
+            type='destination').last()
+        if destination:
+            return destination.phone_number
+        return None
 
     @property
     def start(self):
@@ -32,6 +43,17 @@ class PhoneCall(models.Model):
         if self.start and self.end:
             return self.end - self.start
         return None
+
+
+class PhoneCallParticipant(models.Model):
+    PARTICIPANT_TYPES = (
+        ('source', 'Source'),
+        ('destination', 'Destination'),
+    )
+    call = models.ForeignKey(PhoneCall, on_delete=models.PROTECT)
+    type = models.CharField(max_length=11, choices=PARTICIPANT_TYPES)
+    phone_number = models.CharField(
+        validators=[PHONE_REGEX], max_length=11, null=True)
 
 
 class PhoneCallRecord(models.Model):

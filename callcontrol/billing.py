@@ -19,7 +19,7 @@ class Billing:
         Calculate call price based on period.
         """
         if end <= start:
-            return 0
+            return None
 
         pricing_rules = Pricing.objects.all()
 
@@ -76,14 +76,20 @@ class Billing:
         if not period:
             period = (timezone.now() - relativedelta(months=1)).date()
 
-        phone_calls = PhoneCall.objects.distinct().filter(
-            source=phone_number,
-            phonecallrecord__type='end',
-            phonecallrecord__timestamp__year=period.year,
-            phonecallrecord__timestamp__month=period.month
-        ).exclude(price=None)
+        # Having dificulties to filter from last record of each type,
+        # so I decided filter on code. :(
+        priced_calls = PhoneCall.objects.exclude(price=None)
 
-        total = sum(call.price for call in phone_calls if call.price)
+        phone_calls = [
+            call for call in priced_calls if call.source == phone_number]
+
+        billing_calls = []
+        for phone_call in phone_calls:
+            if phone_call.end.year == period.year and \
+               phone_call.end.month == period.month:
+                billing_calls.append(phone_call)
+
+        total = sum(call.price for call in billing_calls if call.price)
 
         bill = {
             'subscriber': phone_number,
@@ -92,8 +98,9 @@ class Billing:
             'list': []
         }
 
-        for call in phone_calls:
+        for call in billing_calls:
             bill['list'].append({
+                'call_id': call.call_id,
                 'destination': call.destination,
                 'start_date': call.start.date(),
                 'start_time': call.start.time(),

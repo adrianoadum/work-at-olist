@@ -4,7 +4,7 @@ from django.utils.timezone import datetime
 from rest_framework import serializers
 
 from .billing import Billing
-from .models import PhoneCall, PhoneCallRecord
+from .models import PhoneCall, PhoneCallParticipant, PhoneCallRecord
 
 
 class PhoneCallSerializer(serializers.ModelSerializer):
@@ -20,36 +20,39 @@ class PhoneCallSerializer(serializers.ModelSerializer):
         required=True, write_only=True, help_text='Timestamp of the event.')
     source = serializers.RegexField(
         r'\d{10,11}', max_length=11, min_length=10, required=False,
-        help_text=('Required when type is "start". Phone '
-                   'number that originated the call.'))
+        write_only=True, help_text=('Required when type is "start". Phone '
+                                    'number that originated the call.'))
     destination = serializers.RegexField(
         r'\d{10,11}', max_length=11, min_length=10, required=False,
-        help_text=('Required when type is "start". Phone '
-                   'number that received the call.'))
+        write_only=True, help_text=('Required when type is "start". Phone '
+                                    'number that received the call.'))
 
     def validate(self, data):
         if data['type'] == 'start':
-            if not data['source']:
+            if 'source' not in data:
                 raise serializers.ValidationError(
                     'This field is required when type is "start"')
-            if not data['destination']:
+            if 'destination' not in data:
                 raise serializers.ValidationError(
                     'This field is required when type is "start"')
         return data
 
     def create(self, validated_data):
-        try:
-            phone_call = PhoneCall.objects.get(
-                call_id=validated_data.get('call_id'))
-        except PhoneCall.DoesNotExist:
-            phone_call = PhoneCall(call_id=validated_data.get('call_id'))
+        phone_call, __ = PhoneCall.objects.get_or_create(
+            call_id=validated_data.get('call_id'))
 
         if 'source' in validated_data:
-            phone_call.source = validated_data['source']
+            PhoneCallParticipant.objects.create(
+                call=phone_call,
+                type='source',
+                phone_number=validated_data['source']
+            )
         if 'destination' in validated_data:
-            phone_call.destination = validated_data['destination']
-
-        phone_call.save()
+            PhoneCallParticipant.objects.create(
+                call=phone_call,
+                type='destination',
+                phone_number=validated_data['destination']
+            )
 
         PhoneCallRecord.objects.create(
             call=phone_call,
